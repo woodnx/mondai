@@ -33,6 +33,24 @@ $ pnpm build:mac
 $ pnpm build:linux
 ```
 
+### Windows 版のリリース
+
+GitHub Actions（`.github/workflows/release-windows.yml`）で Windows 用インストーラーを作り、GitHub Releases に公開します。
+
+1. `package.json` の `version` を上げてコミットし、push します（例: `1.0.1`）。
+2. 同じバージョンのタグを付けて push します。タグと `version` が一致しないとビルドは失敗します。
+
+   ```bash
+   git tag v1.0.1
+   git push origin v1.0.1
+   ```
+
+3. Actions が終わると、Releases に `mondai-1.0.1-setup.exe` が添付されます。
+
+Actions 画面の「Run workflow」から手動で実行した場合は、リリースは作らずに、実行結果の Artifacts にインストーラーを保存します。
+
+コード署名をしていないため、初回の実行時に SmartScreen の警告が出ます。「詳細情報」→「実行」で起動できます。
+
 ## ウィンドウ構成
 
 起動すると 2 つのウィンドウが開きます。

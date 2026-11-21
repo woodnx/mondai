@@ -6,6 +6,7 @@ export type ColumnMapping = {
   comment: number | null;
   author: number | null;
   partnerComment: number | null;
+  criteria: number | null;
 };
 
 export type SourceDraft = {
@@ -34,6 +35,8 @@ export type Quiz = {
   /** 相方：「作成者」列に登場する、この問題の作成者以外の人（登場順） */
   partners: string[];
   partnerComment: string;
+  /** 別解・正誤判定基準（空欄なら空文字） */
+  criteria: string;
 };
 
 export type SheetsState = {
