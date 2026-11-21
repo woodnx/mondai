@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @plugin "daisyui";
 
 :root {
@@ -26,12 +26,71 @@
   --ev-button-alt-hover-bg: var(--ev-c-gray-2);
 }
 
+/*
+ * テーマ: --theme-accent（テーマカラー）と data-theme（light / dark）から
+ * 背景・パネル・文字色・daisyUI のコンポーネント色をすべて導出する。
+ */
 :root {
-  --color-background: var(--ev-c-black);
-  --color-background-soft: var(--ev-c-black-soft);
-  --color-background-mute: var(--ev-c-black-mute);
+  --theme-accent: #69a9f5;
+}
 
-  --color-text: var(--ev-c-text-1);
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --theme-bg: color-mix(in srgb, var(--theme-accent) 14%, #0b0d11);
+  --theme-bg-glow: color-mix(in srgb, var(--theme-accent) 40%, #0b0d11);
+  --theme-surface: color-mix(in srgb, var(--theme-accent) 24%, #15181d);
+  --theme-surface-strong: color-mix(in srgb, var(--theme-accent) 34%, #1b1e24);
+  --theme-text: color-mix(in srgb, var(--theme-accent) 10%, #f4f5f7);
+  --theme-text-muted: color-mix(in srgb, var(--theme-accent) 30%, #a3a8b1);
+  --theme-accent-text: color-mix(in srgb, var(--theme-accent) 80%, #ffffff);
+  --theme-accent-hover: color-mix(in srgb, var(--theme-accent) 80%, #ffffff);
+  --theme-on-accent: #111317;
+  --theme-border: color-mix(in srgb, var(--theme-accent) 45%, transparent);
+  --theme-border-soft: color-mix(in srgb, var(--theme-accent) 25%, transparent);
+  --theme-bubble: color-mix(in srgb, var(--theme-accent) 30%, #e9ebef);
+  --theme-bubble-text: #111317;
+
+  /* daisyUI */
+  --color-base-100: color-mix(in srgb, var(--theme-accent) 16%, #191c21);
+  --color-base-200: color-mix(in srgb, var(--theme-accent) 14%, #14171b);
+  --color-base-300: color-mix(in srgb, var(--theme-accent) 12%, #101216);
+  --color-base-content: var(--theme-text);
+  --color-primary: var(--theme-accent);
+  --color-primary-content: var(--theme-on-accent);
+  --color-neutral: color-mix(in srgb, var(--theme-accent) 30%, #0e1014);
+  --color-neutral-content: var(--theme-text);
+  --color-info: var(--theme-accent);
+  --color-info-content: var(--theme-on-accent);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --theme-bg: color-mix(in srgb, var(--theme-accent) 12%, #ffffff);
+  --theme-bg-glow: color-mix(in srgb, var(--theme-accent) 38%, #ffffff);
+  --theme-surface: color-mix(in srgb, var(--theme-accent) 16%, #ffffff);
+  --theme-surface-strong: color-mix(in srgb, var(--theme-accent) 26%, #ffffff);
+  --theme-text: color-mix(in srgb, var(--theme-accent) 22%, #14161a);
+  --theme-text-muted: color-mix(in srgb, var(--theme-accent) 35%, #4b5059);
+  --theme-accent-text: color-mix(in srgb, var(--theme-accent) 60%, #000000);
+  --theme-accent-hover: color-mix(in srgb, var(--theme-accent) 85%, #000000);
+  --theme-on-accent: #111317;
+  --theme-border: color-mix(in srgb, var(--theme-accent) 60%, transparent);
+  --theme-border-soft: color-mix(in srgb, var(--theme-accent) 35%, transparent);
+  --theme-bubble: color-mix(in srgb, var(--theme-accent) 30%, #ffffff);
+  --theme-bubble-text: #111317;
+
+  /* daisyUI */
+  --color-base-100: color-mix(in srgb, var(--theme-accent) 5%, #ffffff);
+  --color-base-200: color-mix(in srgb, var(--theme-accent) 12%, #ffffff);
+  --color-base-300: color-mix(in srgb, var(--theme-accent) 22%, #ffffff);
+  --color-base-content: var(--theme-text);
+  --color-primary: var(--theme-accent);
+  --color-primary-content: var(--theme-on-accent);
+  --color-neutral: color-mix(in srgb, var(--theme-accent) 40%, #1d2026);
+  --color-neutral-content: #f7f8fa;
+  --color-info: var(--theme-accent);
+  --color-info-content: var(--theme-on-accent);
 }
 
 *,
@@ -48,22 +107,14 @@ ul {
 
 body {
   min-height: 100vh;
-  color: var(--color-text);
-  background: var(--color-background);
+  color: var(--theme-text);
+  background-color: var(--theme-bg);
+  background-image: radial-gradient(ellipse at top, var(--theme-bg-glow), var(--theme-bg) 70%);
+  background-attachment: fixed;
   line-height: 1.6;
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    'Fira Sans',
-    'Droid Sans',
-    'Helvetica Neue',
-    sans-serif;
+  font-family: 'DotGothic16', sans-serif;
+  font-weight: 400;
+  font-style: normal;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

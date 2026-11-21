@@ -8,6 +8,8 @@
   ],
   "compilerOptions": {
     "composite": true,
+    "module": "es2015",
+    "moduleResolution":"bundler",
     "baseUrl": ".",
     "paths": {
       "@renderer/*": [

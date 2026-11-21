@@ -1,17 +1,12 @@
 <script setup lang="ts">
-import Quiz from './components/Quiz.vue';
+import ControlView from './views/ControlView.vue';
+import DisplayView from './views/DisplayView.vue';
+
+// メインプロセスが URL のハッシュで画面を指定する（#control / #display）
+const view = window.location.hash === '#display' ? 'display' : 'control';
 </script>
 
 <template>
-  <main class="grid grow grid-flow-col grid-rows-3 gap-4">
-    <Quiz question="ここに問題が入る" answer="ここに答えが入る" />
-    <div class="col-span-2">02</div>
-    <div class="col-span-2 row-span-2">03</div>
-  </main>
+  <DisplayView v-if="view === 'display'" />
+  <ControlView v-else />
 </template>
-
-<style lang="css">
-main {
-  width: 100%;
-}
-</style>
