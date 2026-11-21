@@ -1,8 +1,8 @@
 import Papa from 'papaparse';
 import type { Quiz, SourceDraft, SourceSettings } from './sheets';
 
-/** 省略できる列。古い設定ファイルには partnerComment がない（undefined になる） */
-export const optionalColumns = ['comment', 'author', 'partnerComment'] as const;
+/** 省略できる列。古い設定ファイルには partnerComment・criteria がない（undefined になる） */
+export const optionalColumns = ['comment', 'author', 'partnerComment', 'criteria'] as const;
 
 /** 見出しを取得したときに自動で選ぶ見出し名 */
 export const defaultColumnLabels = {
@@ -10,7 +10,8 @@ export const defaultColumnLabels = {
   answer: '答え',
   comment: '作問者コメント',
   author: '作成者',
-  partnerComment: '相方コメント'
+  partnerComment: '相方コメント',
+  criteria: '別解・正誤判定基準'
 } as const;
 
 /**
@@ -126,7 +127,7 @@ export function rowsToQuizzes(rows: string[][], settings: SourceSettings): Quiz[
       throw new Error('設定した列が見出し行に見つかりません。見出しを取得し直してください。');
     }
   }
-  const { question, answer, comment, author, partnerComment } = settings.columns;
+  const { question, answer, comment, author, partnerComment, criteria } = settings.columns;
   const cell = (row: string[], column: number | null | undefined): string =>
     column == null ? '' : (row[column]?.trim() ?? '');
   const quizzes: Quiz[] = rows.slice(settings.headerRow).flatMap((row) => {
@@ -136,7 +137,8 @@ export function rowsToQuizzes(rows: string[][], settings: SourceSettings): Quiz[
       comment: cell(row, comment),
       author: cell(row, author),
       partners: [],
-      partnerComment: cell(row, partnerComment)
+      partnerComment: cell(row, partnerComment),
+      criteria: cell(row, criteria)
     };
     return quiz.question && quiz.answer ? [quiz] : [];
   });

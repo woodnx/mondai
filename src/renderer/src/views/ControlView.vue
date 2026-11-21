@@ -4,11 +4,13 @@ import QuizController from '../components/QuizController.vue';
 import { applyTheme, themeColors, themeModes, type ThemeColor } from '../utils/theme';
 import type { Quiz, SheetHeader, SheetsState, SourceSettings } from '../../../shared/sheets';
 import { defaultColumnLabels } from '../../../shared/sheetSource';
-import type { ThemeMode } from '../../../shared/display';
+import type { QuizTransition, ThemeMode } from '../../../shared/display';
+import { defaultQuizTransition, quizTransitions } from '../utils/transition';
 
 const themeStorageKey = 'mondai.themeColor';
 const themeModeStorageKey = 'mondai.themeMode';
 const titleStorageKey = 'mondai.displayTitle';
+const transitionStorageKey = 'mondai.quizTransition';
 const defaultTitle = 'mondai';
 
 function storedTitle(): string {
@@ -16,6 +18,15 @@ function storedTitle(): string {
     return window.localStorage.getItem(titleStorageKey) ?? defaultTitle;
   } catch {
     return defaultTitle;
+  }
+}
+
+function storedTransition(): QuizTransition {
+  try {
+    const stored = window.localStorage.getItem(transitionStorageKey);
+    return quizTransitions.find((item) => item.value === stored)?.value ?? defaultQuizTransition;
+  } catch {
+    return defaultQuizTransition;
   }
 }
 
@@ -48,7 +59,8 @@ const emptySettings = (): SourceSettings => ({
     answer: -1,
     comment: null,
     author: null,
-    partnerComment: null
+    partnerComment: null,
+    criteria: null
   }
 });
 
@@ -67,14 +79,23 @@ const message = ref('');
 const themeColor = ref<ThemeColor>(storedThemeColor());
 const themeMode = ref<ThemeMode>(storedThemeMode());
 const displayTitle = ref(storedTitle());
+const quizTransition = ref<QuizTransition>(storedTransition());
 
-const columnFields = ['question', 'answer', 'comment', 'author', 'partnerComment'] as const;
+const columnFields = [
+  'question',
+  'answer',
+  'comment',
+  'author',
+  'partnerComment',
+  'criteria'
+] as const;
 const columnLabels = {
   question: '問題文 *',
   answer: '答え *',
   comment: '作問者コメント',
   author: '作成者',
-  partnerComment: '相方コメント'
+  partnerComment: '相方コメント',
+  criteria: '別解・正誤判定基準'
 };
 
 watch(displayTitle, (title) => {
@@ -82,6 +103,14 @@ watch(displayTitle, (title) => {
     window.localStorage.setItem(titleStorageKey, title);
   } catch {
     // The title remains usable for this session if storage is unavailable.
+  }
+});
+
+watch(quizTransition, (value) => {
+  try {
+    window.localStorage.setItem(transitionStorageKey, value);
+  } catch {
+    // The setting remains usable for this session if storage is unavailable.
   }
 });
 
@@ -101,7 +130,7 @@ watch(
 
 // 表示ウィンドウへ現在の問題・開閉状態・テーマを送る
 watch(
-  [quizzes, idx, flipped, themeMode, themeColor, displayTitle],
+  [quizzes, idx, flipped, themeMode, themeColor, displayTitle, quizTransition],
   () => {
     const quiz = quizzes.value[idx.value];
     window.api.display.update({
@@ -110,7 +139,8 @@ watch(
       no: idx.value + 1,
       flipped: flipped.value,
       themeColor: themeColor.value,
-      themeMode: themeMode.value
+      themeMode: themeMode.value,
+      transition: quizTransition.value
     });
   },
   { immediate: true }
@@ -160,7 +190,7 @@ async function run(action: () => Promise<void>): Promise<void> {
   }
 }
 
-/** 表示ウィンドウのカードを裏返すアニメーションの時間（ShowQuiz と合わせる） */
+/** 表示ウィンドウで答えを隠し終わるまでの時間（ShowQuiz の最長のアニメーションに合わせる） */
 const flipDuration = 600;
 
 async function reload(): Promise<void> {
@@ -364,6 +394,26 @@ onMounted(async () => {
             </button>
           </div>
         </fieldset>
+        <fieldset class="flex flex-col gap-3">
+          <legend class="text-xl">切り替えアニメーション</legend>
+          <p class="theme-muted text-sm">
+            次の問題へ進むときと、答えを隠す／見せるときの動きです。
+          </p>
+          <div class="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
+            <button
+              v-for="item in quizTransitions"
+              :key="item.value"
+              type="button"
+              class="theme-choice flex min-h-12 flex-col items-start gap-1 rounded-lg p-2 text-left text-sm"
+              :class="{ 'theme-choice-selected': quizTransition === item.value }"
+              :aria-pressed="quizTransition === item.value"
+              @click="quizTransition = item.value"
+            >
+              <span>{{ item.name }}</span>
+              <span class="theme-muted text-xs">{{ item.description }}</span>
+            </button>
+          </div>
+        </fieldset>
         <div class="theme-divider"></div>
         <h2 class="text-xl">スプレッドシート設定</h2>
         <ol class="text-sm list-decimal pl-5 flex flex-col gap-1">
@@ -438,6 +488,9 @@ onMounted(async () => {
           </div>
           <p class="break-all text-xl">Q. {{ quizzes[idx].question }}</p>
           <p class="break-all text-2xl">A. {{ quizzes[idx].answer }}</p>
+          <p v-if="quizzes[idx].criteria" class="theme-muted break-all text-sm whitespace-pre-line">
+            {{ quizzes[idx].criteria }}
+          </p>
           <p v-if="quizzes[idx].author" class="theme-muted">作問: {{ quizzes[idx].author }}</p>
           <p v-if="quizzes[idx].comment" class="theme-muted break-all text-sm">
             コメント: {{ quizzes[idx].comment }}
@@ -473,13 +526,7 @@ onMounted(async () => {
       v-if="quizzes.length && !settingsOpen"
       class="theme-footer flex w-full shrink-0 flex-wrap items-center justify-around gap-2 p-4 backdrop-blur-sm sm:p-8"
     >
-      <QuizController
-        :is-hidden="flipped"
-        @back="back"
-        @next="next"
-        @hidden="flipped = !flipped"
-        @update:flipped="flipped = $event"
-      />
+      <QuizController :is-hidden="flipped" @back="back" @next="next" @hidden="flipped = !flipped" />
     </footer>
   </div>
 </template>

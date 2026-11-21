@@ -2,6 +2,9 @@ import type { Quiz } from './sheets';
 
 export type ThemeMode = 'light' | 'dark';
 
+/** 問題を切り替えるとき（と答えを隠す／見せるとき）のアニメーション */
+export type QuizTransition = 'fade' | 'slide' | 'crossfade' | 'flip-light' | 'flip' | 'none';
+
 /** 操作ウィンドウから表示ウィンドウへ送る表示内容 */
 export type DisplayState = {
   /** 表示ウィンドウ上部のヘッダーに出すタイトル */
@@ -11,6 +14,7 @@ export type DisplayState = {
   flipped: boolean;
   themeColor: string;
   themeMode: ThemeMode;
+  transition: QuizTransition;
 };
 
 export type DisplayAPI = {

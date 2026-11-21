@@ -44,8 +44,24 @@ test('見出し行と列順の違いに対応し、空の問題を読み飛ば�
     ['C', '次の問題', '']
   ];
   assert.deepEqual(rowsToQuizzes(rows, settings), [
-    { question: 'Q', answer: 'A', comment: '', author: '花子', partners: [], partnerComment: '' },
-    { question: '次の問題', answer: 'C', comment: '', author: '', partners: [], partnerComment: '' }
+    {
+      question: 'Q',
+      answer: 'A',
+      comment: '',
+      author: '花子',
+      partners: [],
+      partnerComment: '',
+      criteria: ''
+    },
+    {
+      question: '次の問題',
+      answer: 'C',
+      comment: '',
+      author: '',
+      partners: [],
+      partnerComment: '',
+      criteria: ''
+    }
   ]);
 });
 
@@ -53,15 +69,15 @@ test('相方は「作成者」列に出てくる自分以外の人（登場順�
   const withComment = {
     ...settings,
     headerRow: 1,
-    columns: { question: 1, answer: 0, comment: 3, author: 2, partnerComment: 4 }
+    columns: { question: 1, answer: 0, comment: 3, author: 2, partnerComment: 4, criteria: 5 }
   };
   const rows = [
-    ['答え', '問題文', '作成者', 'コメント', '相方コメント'],
-    ['A', 'Q1', '木次', 'やった', 'どうせ押される'],
-    ['B', 'Q2', '佐々木', '', ''],
-    ['C', 'Q3', '田中', '', ''],
-    ['D', 'Q4', '木次', '', ''],
-    ['E', 'Q5', '', '', '']
+    ['答え', '問題文', '作成者', 'コメント', '相方コメント', '別解・正誤判定基準'],
+    ['A', 'Q1', '木次', 'やった', 'どうせ押される', '「エー」も正解'],
+    ['B', 'Q2', '佐々木', '', '', ''],
+    ['C', 'Q3', '田中', '', '', ''],
+    ['D', 'Q4', '木次', '', '', ''],
+    ['E', 'Q5', '', '', '', '']
   ];
   const quizzes = rowsToQuizzes(rows, withComment);
   assert.deepEqual(quizzes[0], {
@@ -70,8 +86,10 @@ test('相方は「作成者」列に出てくる自分以外の人（登場順�
     comment: 'やった',
     author: '木次',
     partners: ['佐々木', '田中'],
-    partnerComment: 'どうせ押される'
+    partnerComment: 'どうせ押される',
+    criteria: '「エー」も正解'
   });
+  assert.equal(quizzes[1].criteria, '');
   assert.deepEqual(quizzes[1].partners, ['木次', '田中']);
   assert.deepEqual(quizzes[3].partners, ['佐々木', '田中']);
   assert.deepEqual(quizzes[4].partners, []);
@@ -79,21 +97,39 @@ test('相方は「作成者」列に出てくる自分以外の人（登場順�
   const legacy = { ...withComment, columns: { question: 1, answer: 0, comment: 3, author: 2 } };
   assert.doesNotThrow(() => validateSettings(legacy));
   assert.equal(rowsToQuizzes(rows, legacy)[0].partnerComment, '');
+  assert.equal(rowsToQuizzes(rows, legacy)[0].criteria, '');
 });
 
 test('古い設定にない相方コメント列を見出し名から補い、「使用しない」は変えない', () => {
-  const header = ['No.', '問題文', '答え', '作問者コメント', '相方コメント', '作成者'];
+  const header = [
+    'No.',
+    '問題文',
+    '答え',
+    '作問者コメント',
+    '相方コメント',
+    '作成者',
+    '別解・正誤判定基準'
+  ];
   const old = { ...settings, columns: { question: 1, answer: 2, comment: 3, author: 5 } };
   assert.equal(fillMissingColumns(old, header), true);
   assert.equal(old.columns.partnerComment, 4);
+  assert.equal(old.columns.criteria, 6);
   assert.equal(fillMissingColumns(old, header), false);
 
   const disabled = {
     ...settings,
-    columns: { question: 1, answer: 2, comment: 3, author: 5, partnerComment: null }
+    columns: {
+      question: 1,
+      answer: 2,
+      comment: 3,
+      author: 5,
+      partnerComment: null,
+      criteria: null
+    }
   };
   assert.equal(fillMissingColumns(disabled, header), false);
   assert.equal(disabled.columns.partnerComment, null);
+  assert.equal(disabled.columns.criteria, null);
 });
 
 test('再読み込み時に選択した見出しが消えたらエラーにする', () => {

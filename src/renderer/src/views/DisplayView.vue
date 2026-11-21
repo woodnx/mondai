@@ -37,11 +37,13 @@ onBeforeUnmount(() => unsubscribe?.());
           :no="state.no"
           :question="state.quiz.question"
           :answer="state.quiz.answer"
+          :criteria="state.quiz.criteria ?? ''"
           :author="state.quiz.author"
           :comment="state.quiz.comment"
           :partners="state.quiz.partners ?? []"
           :partner-comment="state.quiz.partnerComment ?? ''"
           :flipped="state.flipped"
+          :transition="state.transition ?? 'fade'"
         />
       </div>
     </main>

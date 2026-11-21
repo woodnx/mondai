@@ -4,27 +4,19 @@ import { ref } from 'vue';
 defineProps<{
   isHidden: boolean;
 }>();
-const emit = defineEmits(['back', 'next', 'hidden', 'update:flipped']);
+const emit = defineEmits(['back', 'next', 'hidden']);
 
 const locking = ref(true);
-const flipped = ref(false);
 
-const flipAndEmit = async (type: 'next' | 'back'): Promise<void> => {
-  flipped.value = true;
-  emit('update:flipped', true);
-  await new Promise((resolve) => setTimeout(resolve, 600)); // アニメーション時間
-  emit(type);
-  flipped.value = false;
-  emit('update:flipped', false);
+// 切り替えのアニメーションは表示ウィンドウ側（ShowQuiz）が設定に合わせて行う
+const back = (): void => {
+  emit('back');
   locking.value = true;
 };
 
-const back = (): void => {
-  flipAndEmit('back');
-};
-
 const next = (): void => {
-  flipAndEmit('next');
+  emit('next');
+  locking.value = true;
 };
 </script>
 
